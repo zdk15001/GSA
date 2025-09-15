@@ -11,8 +11,3 @@
 # NOTE: To load data, you must download both the extract's data and the DDI
 # and also set the working directory to the folder with these files (or change the path below).
 
-#install.packages('ipumsr')
-library(ipumsr)
-
-ddi <- read_ipums_ddi("cps_00001.xml")
-data <- read_ipums_micro(ddi)

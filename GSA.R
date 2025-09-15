@@ -13,10 +13,13 @@
 
 # Set working directory (will be different for each user)
 #setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
-
+setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
 
 # load packages (install before if neccesary)
 library(haven)
 
 # load data from sav
 cps <- read_sav("cps_00005.sav")
+
+
+> 

@@ -17,7 +17,7 @@
 
 # load packages (install before if necessary)
 library(haven)
-install.packages("dplyr")
+#install.packages("dplyr")
 library(dplyr)
 
 # load data from sav
@@ -36,7 +36,7 @@ table(cps$FSSHOPMKTLW)
 
 # Step 2:  clean by removing missing
 cps$access <- ifelse(cps$FSSHOPMKTLW == 1, 0, 
-                             ifelse(cps$FSSHOPMKTLW == 2, 1, NA))
+                      ifelse(cps$FSSHOPMKTLW == 2, 1, NA))
 
 # Step 3: Examine cleaned variable
 table(cps$FSSHOPMKTLW, cps$access, useNA = "ifany")
@@ -45,17 +45,24 @@ table(cps$FSSHOPMKTLW, cps$access, useNA = "ifany")
 # Step 1: Examine
 table(cps$METRO)
 
+
+# Step 2:  clean by removing missing
+cps$msa <- ifelse(cps$METRO == 1, 0, 
+                     ifelse(cps$METRO >= 2 & cps$METRO <=4, 1, NA))
+
+# step 3: confirm
+table(cps$METRO, cps$msa, useNA = "ifany")
+
 ##### Clean household food security scale; 30-day
 # Step 1: Examine
 table(cps$FSSTATUSM)
 
 #Step 2: Clean by removing missing
-cps <- mutate(cps, secure = ifelse(FSSTATUSM == 1, 1, 0))
-cps <- mutate(cps, insecure = ifelse(FSSTATUSM == 2 | FSSTATUSM ==3, 1, 0))
+cps$secure <- ifelse(cps$FSSTATUSM == 1, 1, 
+                    ifelse(cps$FSSTATUSM == 2 | cps$FSSTATUSM ==3, 0, NA))
 
 # Step 3: Examine cleaned variable
-table(cps$FSSTATUSM, cps$secure)
-table(cps$FSSTATUSM, cps$insecure)
+table(cps$FSSTATUSM, cps$secure, useNA = "ifany")
 
 ##### Clean amount spent in supermarket last week
 # Step 1: Examine

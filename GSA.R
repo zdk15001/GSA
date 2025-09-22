@@ -15,8 +15,10 @@
 #setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
 #setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
 
-# load packages (install before if neccesary)
+# load packages (install before if necessary)
 library(haven)
+install.packages("dplyr")
+library(dplyr)
 
 # load data from sav
 cps <- read_sav("cps_00005.sav")
@@ -43,8 +45,41 @@ table(cps$FSSHOPMKTLW, cps$access, useNA = "ifany")
 # Step 1: Examine
 table(cps$METRO)
 
-# Step 2:  clean by removing missing
+##### Clean household food security scale; 30-day
+# Step 1: Examine
+table(cps$FSSTATUSM)
 
+#Step 2: Clean by removing missing
+cps <- mutate(cps, secure = ifelse(FSSTATUSM == 1, 1, 0))
+cps <- mutate(cps, insecure = ifelse(FSSTATUSM == 2 | FSSTATUSM ==3, 1, 0))
+
+# Step 3: Examine cleaned variable
+table(cps$FSSTATUSM, cps$secure)
+table(cps$FSSTATUSM, cps$insecure)
+
+##### Clean amount spent in supermarket last week
+# Step 1: Examine
+table(cps$FSSPDMKTLW)
+
+##### Clean bought food at other places online or last week
+# Step 1: Examine
+table(cps$FSSHOPSTRLW)
+
+##### Clean bought food at places other than super market
+# Step 1: Examine
+table(cps$FSSHOPOTH)
+
+##### Clean received emergency food
+# Step 1: Examine
+table(cps$FSFDBNKMO)
+
+##### Clean how often received emergency food
+# Step 1: Examine
+table(cps$FSFDBNK)
+
+##### Clean received SNAP; food stamps in the past year
+# Step 1: Examine
+table(cps$FSFDSTMP)
 
 
 

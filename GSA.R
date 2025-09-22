@@ -21,7 +21,7 @@ library(haven)
 library(dplyr)
 
 # load data from sav
-cps <- read_sav("cps_00005.sav")
+cps <- read_sav("cps.sav")
 
 
 
@@ -67,6 +67,14 @@ table(cps$FSSTATUSM, cps$secure, useNA = "ifany")
 ##### Clean amount spent in supermarket last week
 # Step 1: Examine
 table(cps$FSSPDMKTLW)
+
+# step 2 code missing
+cps$grocery_spending <- cps$FSSPDMKTLW
+cps$grocery_spending <- ifelse(cps$FSSPDMKTLW > 490, NA, cps$FSSPDMKTLW)
+
+# step 3: confirm
+cps$grocery_check <- cps$FSSPDMKTLW - cps$grocery_spending
+table(cps$grocery_check)
 
 ##### Clean bought food at other places online or last week
 # Step 1: Examine

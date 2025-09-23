@@ -21,7 +21,7 @@ library(haven)
 library(dplyr)
 
 # load data from sav
-cps <- read_sav("cps.sav")
+cps <- read_sav("cps9.22.sav")
 
 
 
@@ -80,21 +80,69 @@ table(cps$grocery_check)
 # Step 1: Examine
 table(cps$FSSHOPSTRLW)
 
-##### Clean bought food at places other than super market
-# Step 1: Examine
-table(cps$FSSHOPOTH)
+# Step 2: clean by removing missing
+cps$buy_other <- ifelse(cps$FSSHOPSTRLW == 1, 0,
+                       ifelse(cps$FSSHOPSTRLW == 2, 1, NA))
+
+# Step 3: confirm
+table(cps$FSSHOPSTRLW, cps$buy_other, useNA = "ifany")
+
 
 ##### Clean received emergency food
 # Step 1: Examine
 table(cps$FSFDBNKMO)
 
-##### Clean how often received emergency food
-# Step 1: Examine
-table(cps$FSFDBNK)
+# Step 2: clean
+cps$emergency_food <- ifelse(cps$FSFDBNKMO == 1, 0,
+                       ifelse(cps$FSFDBNKMO == 2, 1, NA))
+
+# Step 3: confirm
+table(cps$FSFDBNKMO, cps$emergency_food, useNA = "ifany")
+
 
 ##### Clean received SNAP; food stamps in the past year
 # Step 1: Examine
 table(cps$FSFDSTMP)
+
+# Step 2: clean
+cps$food_stamp <- ifelse(cps$FSFDSTMP == 1, 0,
+                            ifelse(cps$FSFDSTMP == 2, 1, NA))
+
+#Step 3: confirm
+table(cps$FSFDSTMP, cps$food_stamp, useNA = "ifany")
+
+##### Clean family income
+#Step 1: examine
+table(cps$FAMINC)
+
+#Step 2: clean
+cps$fam_income <- cps$FAMINC
+
+##### Clean age
+# Step 1: examine
+table(cps$AGE)
+
+##### Clean sex
+# Step 1: examine
+table(cps$SEX)
+
+# Step 2: clean
+cps$sex <- cps$SEX
+
+##### Clean race
+# Step 1: examine
+table(cps$RACE)
+
+##### Clean marital status
+# Step 1: examine
+table(cps$MARST)
+
+##### Clean employment status
+# Step 1: examine
+table(cps$EMPSTAT)
+
+
+
 
 
 

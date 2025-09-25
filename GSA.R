@@ -116,12 +116,15 @@ table(cps$FSFDSTMP, cps$food_stamp, useNA = "ifany")
 table(cps$FAMINC)
 
 # Step 2: clean
-cps <- mutate(cps, less_than50k = ifelse(FAMINC <= 740, 1,
-                                    ifelse(FAMINC >= 995, NA, 0)))
-cps <- mutate(cps, more_than50k = ifelse(FAMINC >= 800 & FAMINC <= 994, 1,
-                                    ifelse(FAMINC >= 995, NA, 0)))
-#cps$more_than50k <- ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 994, 1,
-                           #ifelse(cps$FAMINC >=995, NA, 0))
+cps$less_than50k <- ifelse(cps$FAMINC <= 740, 1,
+                           ifelse(cps$FAMINC >=995, NA, 0))
+
+cps$more_than50k <- ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 994, 1,
+                           ifelse(cps$FAMINC >=995, NA, 0)) 
+#cps$income <-ifelse(cps$FAMINC <= 740, 1,
+                     #ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 994, 2,
+                            #ifelse(cps$FAMINC >= 995, NA, 0)))
+                           
 # Step 3: confirm
 table(cps$FAMINC, cps$less_than50k, useNA = "ifany")
 table(cps$FAMINC, cps$more_than50k, useNA = "ifany")
@@ -189,11 +192,20 @@ table(cps$EMPSTAT, cps$ILF, useNA = "ifany")
 table(cps$EMPSTAT, cps$NILF, useNA = "ifany")
 
 
+##### Clean difficulty with mobility
+# Step 1: examine
+table(cps$DIFFMOB)
+
+# Step 2: clean
+cps$no_mob_limit <-ifelse(cps$DIFFMOB == 1, 1,
+                          ifelse(cps$DIFFMOB == 0, NA, 0))
+cps$mob_limit <-ifelse(cps$DIFFMOB == 2, 1,
+                       ifelse(cps$DIFFMOB == 0, NA, 0))
 
 
-
-
-
+# Step 3: confirm
+table(cps$DIFFMOB, cps$no_mob_limit, useNA = "ifany")
+table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
 
 
 

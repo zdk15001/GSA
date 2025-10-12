@@ -18,7 +18,7 @@
 # load packages (install before if necessary)
 library(haven)
 #install.packages("dplyr")
-library(dplyr)
+library(dplyr
 
 # load data from sav
 cps <- read_sav("cps9.22.sav")
@@ -58,23 +58,17 @@ table(cps$METRO, cps$msa, useNA = "ifany")
 table(cps$FSSTATUSM)
 
 #Step 2: Clean by removing missing
-cps$secure <- ifelse(cps$FSSTATUSM == 1, 1, 
-                    ifelse(cps$FSSTATUSM == 2 | cps$FSSTATUSM ==3, 0, NA))
+cps$secure <- ifelse(cps$FSSTATUSM == 1, 0, 
+                    ifelse(cps$FSSTATUSM >= 98, NA, 1))
+cps$low_secure <- ifelse(cps$FSSTATUSM == 2, 0,
+                         ifelse(cps$FSSTATUSM >= 98, NA, 1))
+cps$very_low_secure <- ifelse(cps$FSSTATUSM == 3, 0,
+                              ifelse(cps$FSSTATUSM >= 98, NA, 1))
 
 # Step 3: Examine cleaned variable
 table(cps$FSSTATUSM, cps$secure, useNA = "ifany")
-
-##### Clean amount spent in supermarket last week
-# Step 1: Examine
-table(cps$FSSPDMKTLW)
-
-# step 2 code missing
-cps$grocery_spending <- cps$FSSPDMKTLW
-cps$grocery_spending <- ifelse(cps$FSSPDMKTLW > 490, NA, cps$FSSPDMKTLW)
-
-# step 3: confirm
-cps$grocery_check <- cps$FSSPDMKTLW - cps$grocery_spending
-table(cps$grocery_check)
+table(cps$FSSTATUSM, cps$low_secure, useNA = "ifany")
+table(cps$FSSTATUSM, cps$very_low_secure, useNA = "ifany")
 
 ##### Clean bought food at other places online or last week
 # Step 1: Examine
@@ -86,7 +80,6 @@ cps$buy_other <- ifelse(cps$FSSHOPSTRLW == 1, 0,
 
 # Step 3: confirm
 table(cps$FSSHOPSTRLW, cps$buy_other, useNA = "ifany")
-
 
 ##### Clean received emergency food
 # Step 1: Examine
@@ -116,18 +109,23 @@ table(cps$FSFDSTMP, cps$food_stamp, useNA = "ifany")
 table(cps$FAMINC)
 
 # Step 2: clean
-cps$less_than50k <- ifelse(cps$FAMINC <= 740, 1,
+cps$less_than_50k <- ifelse(cps$FAMINC <= 740, 1,
                            ifelse(cps$FAMINC >=995, NA, 0))
 
-cps$more_than50k <- ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 994, 1,
-                           ifelse(cps$FAMINC >=995, NA, 0)) 
+cps$from_50k_to_100k <- ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 841, 1,
+                           ifelse(cps$FAMINC >=995, NA, 0))
+
+cps$more_than_100k <- ifelse(cps$FAMINC >= 842 & cps$FAMINC <= 994, 1,
+                           ifelse(cps$FAMINC >=995, NA, 0))
+
 #cps$income <-ifelse(cps$FAMINC <= 740, 1,
                      #ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 994, 2,
                             #ifelse(cps$FAMINC >= 995, NA, 0)))
                            
 # Step 3: confirm
-table(cps$FAMINC, cps$less_than50k, useNA = "ifany")
-table(cps$FAMINC, cps$more_than50k, useNA = "ifany")
+table(cps$FAMINC, cps$less_than_50k, useNA = "ifany")
+table(cps$FAMINC, cps$from_50k_to_100k, useNA = "ifany")
+table(cps$FAMINC, cps$more_than_100k, useNA = "ifany")
 
 ##### Clean age
 # Step 1: examine
@@ -213,6 +211,11 @@ table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
 #################            STEP 3: Create complete case dataset      #####################
 ###############################################################################
 
+my_varlist <- c("access", "msa", "secure", "low_secure", "very_low_secure",
+                "buy_other", "emergency_food", "food_stamp", "less_than_50k",
+                "from_50k_to_100k", "more_than_100k", "male", "female",
+                "white", "black", "native", "asian", "mixed", "married",
+                "not_married", "ILF", "NILF", "no_mob_limit", "mob_limit")
 
 ###############################################################################
 #################            STEP 4:Descriptive Statistics      #####################

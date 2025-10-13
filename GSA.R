@@ -18,7 +18,9 @@
 # load packages (install before if necessary)
 library(haven)
 #install.packages("dplyr")
-library(dplyr
+library(dplyr)
+#install.packages("psych")
+library(psych)
 
 # load data from sav
 cps <- read_sav("cps9.22.sav")
@@ -58,12 +60,16 @@ table(cps$METRO, cps$msa, useNA = "ifany")
 table(cps$FSSTATUSM)
 
 #Step 2: Clean by removing missing
-cps$secure <- ifelse(cps$FSSTATUSM == 1, 0, 
-                    ifelse(cps$FSSTATUSM >= 98, NA, 1))
-cps$low_secure <- ifelse(cps$FSSTATUSM == 2, 0,
-                         ifelse(cps$FSSTATUSM >= 98, NA, 1))
-cps$very_low_secure <- ifelse(cps$FSSTATUSM == 3, 0,
-                              ifelse(cps$FSSTATUSM >= 98, NA, 1))
+cps$secure <- ifelse(cps$FSSTATUSM == 1, 1, 
+                    ifelse(cps$FSSTATUSM >= 98, NA, 0))
+
+cps$low_secure <- ifelse(cps$FSSTATUSM == 2, 1, 
+                     ifelse(cps$FSSTATUSM >= 98, NA, 0))
+
+cps$very_low_secure <- ifelse(cps$FSSTATUSM == 3, 1, 
+                     ifelse(cps$FSSTATUSM >= 98, NA, 0))
+
+
 
 # Step 3: Examine cleaned variable
 table(cps$FSSTATUSM, cps$secure, useNA = "ifany")
@@ -167,9 +173,13 @@ table(cps$RACE, cps$mixed, useNA = "ifany")
 table(cps$MARST)
 
 #Step 2: clean
-cps$married <- ifelse(cps$MARST == 1 | cps$MARST == 2, 1, 0)
-cps$not_married <- ifelse(cps$MARST >= 3 & cps$MARST <= 7, 1,
-                          ifelse(cps$MARST == 9, NA,))
+cps$married <- ifelse(cps$MARST == 1 | cps$MARST == 2, 1, 
+                      ifelse(cps$MARST == 9, NA, 0))
+
+cps$not_married <- ifelse(cps$MARST >= 3 & cps$MARST <= 7, 1, 
+                      ifelse(cps$MARST == 9, NA, 0))
+
+
 
 #Step 3: confirm
 table(cps$MARST, cps$married, useNA = "ifany")
@@ -181,8 +191,8 @@ table(cps$MARST, cps$not_married, useNA = "ifany")
 table(cps$EMPSTAT)
 
 # Step 2: clean
-cps$ILF <- ifelse(cps$EMPSTAT >= 01 & cps$EMPSTAT < 12, 1, 0)
-cps$NILF <- ifelse(cps$EMPSTAT >= 12, 1,
+cps$ILF <- ifelse(cps$EMPSTAT >= 01 & cps$EMPSTAT <= 22, 1, 0)
+cps$NILF <- ifelse(cps$EMPSTAT > 22, 1,
                    ifelse(cps$EMPSTAT == 00, NA, 0))
 
 # Step 3: confirm 
@@ -216,6 +226,16 @@ my_varlist <- c("access", "msa", "secure", "low_secure", "very_low_secure",
                 "from_50k_to_100k", "more_than_100k", "male", "female",
                 "white", "black", "native", "asian", "mixed", "married",
                 "not_married", "ILF", "NILF", "no_mob_limit", "mob_limit")
+
+
+### STEP 2: create a new dataset with only your variables and complete case
+my_dataset <- cps %>%
+  select(all_of(my_varlist)) %>%
+  filter(complete.cases(.))
+
+### STEP 3: Gather Summary Statistics and confirm valid dataset construction
+describe(my_dataset)
+
 
 ###############################################################################
 #################            STEP 4:Descriptive Statistics      #####################

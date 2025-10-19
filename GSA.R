@@ -13,7 +13,7 @@
 
 # Set working directory (will be different for each user)
 #setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
-#setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
+setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
 
 # load packages (install before if necessary)
 library(haven)
@@ -23,7 +23,7 @@ library(dplyr)
 library(psych)
 
 # load data from sav
-cps <- read_sav("cps9.22.sav")
+cps <- read_sav("cps_10_19.sav")
 
 
 
@@ -37,11 +37,11 @@ cps <- read_sav("cps9.22.sav")
 table(cps$FSSHOPMKTLW)
 
 # Step 2:  clean by removing missing
-cps$access <- ifelse(cps$FSSHOPMKTLW == 1, 0, 
+cps$grocery_food <- ifelse(cps$FSSHOPMKTLW == 1, 0, 
                       ifelse(cps$FSSHOPMKTLW == 2, 1, NA))
 
 # Step 3: Examine cleaned variable
-table(cps$FSSHOPMKTLW, cps$access, useNA = "ifany")
+table(cps$FSSHOPMKTLW, cps$grocery_food, useNA = "ifany")
 
 ##### Clean metro
 # Step 1: Examine
@@ -81,11 +81,11 @@ table(cps$FSSTATUSM, cps$very_low_secure, useNA = "ifany")
 table(cps$FSSHOPSTRLW)
 
 # Step 2: clean by removing missing
-cps$buy_other <- ifelse(cps$FSSHOPSTRLW == 1, 0,
+cps$convenience_food <- ifelse(cps$FSSHOPSTRLW == 1, 0,
                        ifelse(cps$FSSHOPSTRLW == 2, 1, NA))
 
 # Step 3: confirm
-table(cps$FSSHOPSTRLW, cps$buy_other, useNA = "ifany")
+table(cps$FSSHOPSTRLW, cps$convenience_food, useNA = "ifany")
 
 ##### Clean received emergency food
 # Step 1: Examine
@@ -215,17 +215,40 @@ cps$mob_limit <-ifelse(cps$DIFFMOB == 2, 1,
 table(cps$DIFFMOB, cps$no_mob_limit, useNA = "ifany")
 table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
 
+##### Clean bought food at restaurant, fast food place, cafeteria, deli, convenience store & vending machine
+
+# Step 1: examine
+table(cps$FSSHOPRESTLW)
+
+# Step 2: clean
+cps$prepared_food <- ifelse(cps$FSSHOPRESTLW == 1, 0, 
+                     ifelse(cps$FSSHOPRESTLW == 2, 1, NA))
+
+# Step 3: confirm
+table(cps$FSSHOPRESTLW, cps$prepared_food, useNA = "ifany")
+
+# Step 1: examine
+table(cps$FSSHOPOTHLW)
+
+# Step 2: clean
+cps$other_food <- ifelse(cps$FSSHOPOTHLW == 1, 0, 
+                            ifelse(cps$FSSHOPOTHLW == 2, 1, NA))
+
+# Step 3: confirm
+table(cps$FSSHOPOTHLW, cps$other_food, useNA = "ifany")
 
 
 ###############################################################################
 #################            STEP 3: Create complete case dataset      #####################
 ###############################################################################
 
-my_varlist <- c("access", "msa", "secure", "low_secure", "very_low_secure",
-                "buy_other", "emergency_food", "food_stamp", "less_than_50k",
+my_varlist <- c("grocery_food", "msa", "secure", "low_secure", "very_low_secure",
+                "convenience_food", "emergency_food", "food_stamp", "less_than_50k",
                 "from_50k_to_100k", "more_than_100k", "male", "female",
                 "white", "black", "native", "asian", "mixed", "married",
-                "not_married", "ILF", "NILF", "no_mob_limit", "mob_limit")
+                "not_married", "ILF", "NILF", "no_mob_limit", "mob_limit", "prepared_food",
+                "other_food"
+                )
 
 
 ### STEP 2: create a new dataset with only your variables and complete case

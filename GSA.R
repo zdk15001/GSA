@@ -12,7 +12,7 @@
 # and also set the working directory to the folder with these files (or change the path below).
 
 # Set working directory (will be different for each user)
-setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
+#setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
 #setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
 
 # load packages (install before if necessary)
@@ -214,6 +214,8 @@ cps$mob_limit <-ifelse(cps$DIFFMOB == 2, 1,
 # Step 3: confirm
 table(cps$DIFFMOB, cps$no_mob_limit, useNA = "ifany")
 table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
+
+
 
 
 

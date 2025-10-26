@@ -13,7 +13,7 @@
 
 # Set working directory (will be different for each user)
 #setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
-setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
+#setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
 
 # load packages (install before if necessary)
 library(haven)
@@ -132,6 +132,18 @@ table(cps$FSFDSTMP, cps$food_stamp, useNA = "ifany")
 ##### Clean age
 # Step 1: examine
 table(cps$AGE)
+
+# Step 2: clean based on YEAR and AGE 
+cps$age_recode <- with(cps, ifelse(YEAR >= 1962 & YEAR <= 1987 & AGE >= 99, 99,
+                                     ifelse(YEAR >= 1988 & YEAR <= 2002 & AGE >= 90, 90,
+                                            ifelse(YEAR >= 2002 & YEAR < 2004 & AGE >= 80, 80,
+                                                   ifelse(YEAR >= 2004 & AGE >= 85, 85,
+                                                          ifelse(YEAR >= 2004 & AGE >= 80 & AGE <= 84, 80, AGE))))))
+
+# Step 3: confirm
+table(cps$YEAR, cps$age_recode, useNA = "ifany")
+
+
 
 ##### Clean sex
 # Step 1: examine

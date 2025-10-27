@@ -13,7 +13,7 @@
 
 # Set working directory (will be different for each user)
 #setwd("G:/My Drive/EDU_SYNC/Research/Active/GSA/Work")
-setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
+#setwd("~/Library/CloudStorage/GoogleDrive-sanchej6@tcnj.edu/.shortcut-targets-by-id/1ulTYv34Kx9mqKoGgMo1TF6o4gmz3sn5f/GSA/Work ")
 
 # load packages (install before if necessary)
 library(haven)
@@ -23,7 +23,7 @@ library(dplyr)
 library(psych)
 
 # load data from sav
-cps <- read_sav("cps.10.21.sav")
+cps <- read_sav("cps.10.26.sav")
 
 
 
@@ -129,9 +129,48 @@ cps$food_stamp <- ifelse(cps$FSFDSTMP == 1, 0,
 #Step 3: confirm
 table(cps$FSFDSTMP, cps$food_stamp, useNA = "ifany")
 
+
+
+#### Clean cut or skipped meal
+# Step 1: examine
+table(cps$FSSKIPMOCAT)
+
+# Step 2: clean
+cps$skip_cut <- ifelse(cps$FSSKIPMOCAT <= 10, 1, NA)
+
+# Step 3: confirm
+table(cps$FSSKIPMOCAT, cps$skip_cut, useNA = "ifany")
+
+
+
+##### Clean weight loss
+# Step 1: examine
+table(cps$FSLOSEWTM)
+
+# Step 2: clean
+cps$lost_weight <- ifelse(cps$FSLOSEWTM == 1, 0,
+                         ifelse(cps$FSLOSEWTM == 2, 1, NA))
+
+# Step 3: confirm
+table(cps$FSLOSEWTM, cps$lost_weight, useNA = "ifany")
+
+
+
 ##### Clean age
 # Step 1: examine
 table(cps$AGE)
+
+# Step 2: clean based on YEAR and AGE 
+cps$age_recode <- with(cps, ifelse(YEAR >= 1962 & YEAR <= 1987 & AGE >= 99, 99,
+                                     ifelse(YEAR >= 1988 & YEAR <= 2002 & AGE >= 90, 90,
+                                            ifelse(YEAR >= 2002 & YEAR < 2004 & AGE >= 80, 80,
+                                                   ifelse(YEAR >= 2004 & AGE >= 85, 85,
+                                                          ifelse(YEAR >= 2004 & AGE >= 80 & AGE <= 84, 80, AGE))))))
+
+# Step 3: confirm
+table(cps$YEAR, cps$age_recode, useNA = "ifany")
+
+
 
 ##### Clean sex
 # Step 1: examine
@@ -180,6 +219,23 @@ cps$not_married <- ifelse(cps$MARST >= 3 & cps$MARST <= 7, 1,
 #Step 3: confirm
 table(cps$MARST, cps$married, useNA = "ifany")
 table(cps$MARST, cps$not_married, useNA = "ifany")
+
+
+##### Clean education
+# Step 1: examine
+table(cps$EDUC)
+
+# Step 2: clean
+cps$hs_or_less <- ifelse(cps$EDUC <= 073, 1, NA)
+cps$associates <- ifelse(cps$EDUC == 091, 1, NA)
+cps$bachelors <- ifelse(cps$EDUC == 111, 1, NA)
+cps$grad_school <- ifelse(cps$EDUC >= 123 & cps$EDUC <= 125, 1, NA)
+
+# Step 3: confirm
+table(cps$EDUC, cps$hs_or_less, useNA = "ifany")
+table(cps$EDUC, cps$associates, useNA = "ifany")
+table(cps$EDUC, cps$bachelors, useNA = "ifany")
+table(cps$EDUC, cps$grad_school, useNA = "ifany")
 
 
 ##### Clean employment status
@@ -260,10 +316,11 @@ table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
 ###############################################################################
 
 my_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
-                "low_secure", "very_low_secure", "emergency_food", "food_stamp", 
-                "less_than_50k", "from_50k_to_100k", "more_than_100k", "male", "female",
-                "white", "black", "native", "asian", "mixed", "married",
-                "not_married", "ILF", "NILF", "msa", "no_mob_limit", "mob_limit")
+                "low_secure", "very_low_secure", "emergency_food", "food_stamp", "skip_cut", 
+                "lost_weight", "less_than_50k", "from_50k_to_100k", "more_than_100k", 
+                "male", "female", "white", "black", "native", "asian", "mixed", "married",
+                "not_married", "hs_or_less", "associates", "bachelors", "grad_school", 
+                "ILF", "NILF", "msa", "no_mob_limit", "mob_limit")
 
 
 ### STEP 2: create a new dataset with only your variables and complete case

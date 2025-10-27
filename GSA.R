@@ -160,15 +160,11 @@ table(cps$FSLOSEWTM, cps$lost_weight, useNA = "ifany")
 # Step 1: examine
 table(cps$AGE)
 
-# Step 2: clean based on YEAR and AGE 
-cps$age_recode <- with(cps, ifelse(YEAR >= 1962 & YEAR <= 1987 & AGE >= 99, 99,
-                                     ifelse(YEAR >= 1988 & YEAR <= 2002 & AGE >= 90, 90,
-                                            ifelse(YEAR >= 2002 & YEAR < 2004 & AGE >= 80, 80,
-                                                   ifelse(YEAR >= 2004 & AGE >= 85, 85,
-                                                          ifelse(YEAR >= 2004 & AGE >= 80 & AGE <= 84, 80, AGE))))))
+# Step 2: clean  
+
 
 # Step 3: confirm
-table(cps$YEAR, cps$age_recode, useNA = "ifany")
+
 
 
 
@@ -177,12 +173,12 @@ table(cps$YEAR, cps$age_recode, useNA = "ifany")
 table(cps$SEX)
 
 # Step 2: clean
-cps$male <- ifelse(cps$SEX == 1, 1, 0)
-cps$female <- ifelse(cps$SEX == 2, 1, 0)
+cps$man <- ifelse(cps$SEX == 1, 1, 0)
+cps$woman <- ifelse(cps$SEX == 2, 1, 0)
 
 # Step 3: confirm
-table(cps$SEX, cps$male, useNA = "ifany")
-table(cps$SEX, cps$female, useNA = "ifany")
+table(cps$SEX, cps$man, useNA = "ifany")
+table(cps$SEX, cps$woman, useNA = "ifany")
 
 ##### Clean race
 # Step 1: examine
@@ -267,9 +263,6 @@ cps$from_50k_to_100k <- ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 841, 1,
 cps$more_than_100k <- ifelse(cps$FAMINC >= 842 & cps$FAMINC <= 994, 1,
                              ifelse(cps$FAMINC >=995, NA, 0))
 
-#cps$income <-ifelse(cps$FAMINC <= 740, 1,
-#ifelse(cps$FAMINC >= 800 & cps$FAMINC <= 994, 2,
-#ifelse(cps$FAMINC >= 995, NA, 0)))
 
 # Step 3: confirm
 table(cps$FAMINC, cps$less_than_50k, useNA = "ifany")
@@ -315,12 +308,17 @@ table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
 #################            STEP 3: Create complete case dataset      #####################
 ###############################################################################
 
-my_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
+my_full_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
                 "low_secure", "very_low_secure", "emergency_food", "food_stamp", "skip_cut", 
-                "lost_weight", "less_than_50k", "from_50k_to_100k", "more_than_100k", 
-                "male", "female", "white", "black", "native", "asian", "mixed", "married",
+                "lost_weight", "less_than_50k", "from_50k_to_100k", "more_than_100k", "AGE",  
+                "man", "woman", "white", "black", "native", "asian", "mixed", "married",
                 "not_married", "hs_or_less", "associates", "bachelors", "grad_school", 
                 "ILF", "NILF", "msa", "no_mob_limit", "mob_limit")
+
+my_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
+                "low_secure", "very_low_secure", "food_stamp", "less_than_50k",
+                "from_50k_to_100k", "more_than_100k", "AGE", "man", "woman", "white",
+                "black", "native", "asian", "mixed", "married", "not_married")
 
 
 ### STEP 2: create a new dataset with only your variables and complete case

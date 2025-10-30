@@ -318,7 +318,8 @@ my_full_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", 
 my_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
                 "low_secure", "very_low_secure", "food_stamp", "less_than_50k",
                 "from_50k_to_100k", "more_than_100k", "AGE", "man", "woman", "white",
-                "black", "native", "asian", "mixed", "married", "not_married")
+                "black", "native", "asian", "mixed", "married", "not_married",
+                "ILF", "NILF", "msa", "no_mob_limit", "mob_limit")
 
 
 ### STEP 2: create a new dataset with only your variables and complete case

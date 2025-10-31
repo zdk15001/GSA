@@ -239,7 +239,9 @@ table(cps$EDUC, cps$grad_school, useNA = "ifany")
 table(cps$EMPSTAT)
 
 # Step 2: clean
-cps$ILF <- ifelse(cps$EMPSTAT >= 01 & cps$EMPSTAT <= 22, 1, 0)
+cps$ILF <- ifelse(cps$EMPSTAT >= 01 & cps$EMPSTAT <= 22, 1,
+                  ifelse(cps$EMPSTAT == 00, NA, 0))
+
 cps$NILF <- ifelse(cps$EMPSTAT > 22, 1,
                    ifelse(cps$EMPSTAT == 00, NA, 0))
 
@@ -311,6 +313,9 @@ table(cps$DIFFMOB, cps$mob_limit, useNA = "ifany")
 my_full_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
                 "low_secure", "very_low_secure", "emergency_food", "food_stamp", "skip_cut", 
                 "lost_weight", "less_than_50k", "from_50k_to_100k", "more_than_100k", "AGE",  
+full_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secure", 
+                "low_secure", "very_low_secure", "emergency_food", "food_stamp", "skip_cut", 
+                "lost_weight", "less_than_50k", "from_50k_to_100k", "more_than_100k", 
                 "man", "woman", "white", "black", "native", "asian", "mixed", "married",
                 "not_married", "hs_or_less", "associates", "bachelors", "grad_school", 
                 "ILF", "NILF", "msa", "no_mob_limit", "mob_limit")
@@ -320,6 +325,8 @@ my_varlist <- c("grocery_food", "prepared_food", "alt_food", "other_food", "secu
                 "from_50k_to_100k", "more_than_100k", "AGE", "man", "woman", "white",
                 "black", "native", "asian", "mixed", "married", "not_married",
                 "ILF", "NILF", "msa", "no_mob_limit", "mob_limit")
+my_varlist <- c("grocery_food", "food_stamp", "secure","low_secure", "very_low_secure",
+                "prepared_food", "alt_food", "other_food", "man", "woman")
 
 
 ### STEP 2: create a new dataset with only your variables and complete case
@@ -335,8 +342,11 @@ describe(my_dataset)
 #################            STEP 4:Descriptive Statistics      #####################
 ###############################################################################
 
-
+describe(my_dataset)
 
 ###############################################################################
 #################            STEP 5: Regression analysis       #####################
 ###############################################################################
+
+
+table(my_dataset$food_stamp, my_dataset$grocery_food)

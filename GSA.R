@@ -345,10 +345,11 @@ describe(my_dataset)
 
 table(my_dataset$food_stamp, my_dataset$grocery_food)
 
+#mdodel1: comparing grocery food and food stamp
 model1 <- glm(grocery_food ~ food_stamp , data = my_dataset)
 summary(model1)
 
-
+#model2: comapring grocery food, food stamps, and less than 50k income
 model2 <- glm(grocery_food ~ food_stamp + less_than_50k, data = my_dataset)
 summary(model2)
 

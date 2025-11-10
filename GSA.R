@@ -381,6 +381,11 @@ table3_model1 <- glm(grocery_food ~
               data = my_dataset, family="binomial")
 summary(table3_model1)
 
+
+
+
+
+
 table3_model2 <- glm(prepared_food ~ 
                        less_than_50k + ILF + 
                        AGE + married + white + man + msa +
@@ -398,3 +403,8 @@ table4_model1 <- glm(grocery_food ~
                        mob_limit*food_stamp,
                      data = my_dataset, family="binomial")
 summary(table4_model1)
+
+
+
+
+

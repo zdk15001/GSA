@@ -358,17 +358,17 @@ model1 <- glm(grocery_food ~ food_stamp, data = my_dataset, family = "binomial")
 summary(model1)
 
 #model2: SES
-model2 <- glm(grocery_food ~ less_than_50k + ILF, data = my_dataset, family = "binomial")
+model2 <- glm(grocery_food ~ prepared_food + less_than_50k + ILF, data = my_dataset, family = "binomial")
 summary(model2)
 
 
-#model3: Sociodemographic
-model3 <- glm(grocery_food ~ AGE + married + white + man + msa, data = my_dataset, family = "binomial")
+#model3: Food stamp x Difficulty with Mobility
+model3 <- glm(grocery_food ~ food_stamp + mob_limit, data = my_dataset, family = "binomial")
 summary(model3)
 
 
-#model4: Mobility
-model4 <- glm(grocery_food ~ mob_limit, data = my_dataset, family = "binomial")
+#model4: All
+model4 <- glm(grocery_food ~ food_stamp + AGE + man + white + married + msa + ILF + less_than_50k + mob_limit, data = my_dataset, family = "binomial")
 summary(model4)
 
 

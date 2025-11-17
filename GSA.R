@@ -350,61 +350,43 @@ cor(my_dataset)
 #################            STEP 6: Regression analysis       #####################
 ###############################################################################
 
-
-table(my_dataset$food_stamp, my_dataset$grocery_food)
-
-#mdodel1: Food Security
-model1 <- glm(grocery_food ~ food_stamp, data = my_dataset, family = "binomial")
-summary(model1)
-
-#model2: SES
-model2 <- glm(grocery_food ~ prepared_food + less_than_50k + ILF, data = my_dataset, family = "binomial")
-summary(model2)
-
-
-#model3: Food stamp x Difficulty with Mobility
-model3 <- glm(grocery_food ~ food_stamp + mob_limit, data = my_dataset, family = "binomial")
-summary(model3)
-
-
-#model4: All
-model4 <- glm(grocery_food ~ food_stamp + AGE + man + white + married + msa + ILF + less_than_50k + mob_limit, data = my_dataset, family = "binomial")
-summary(model4)
+# check functional form for all quant independent variables.
+my_dataset$age2 <- my_dataset$AGE^2
 
 
 ### REGRESSION MODELS FOR TABLE 3
 table3_model1 <- glm(grocery_food ~ 
                 less_than_50k + ILF + 
-                AGE + married + white + man + msa +
-                mob_limit +
-                food_stamp,
+                AGE + age2 + married + white + man + msa +
+                mob_limit + food_stamp,
               data = my_dataset, family="binomial")
 summary(table3_model1)
 
 
-
-
-
-
 table3_model2 <- glm(prepared_food ~ 
                        less_than_50k + ILF + 
-                       AGE + married + white + man + msa +
-                       mob_limit +
-                       food_stamp,
+                       AGE + age2 + married + white + man + msa +
+                       mob_limit + food_stamp,
                      data = my_dataset, family="binomial")
 summary(table3_model2)
 
 ### REGRESSION MODELS FOR TABLE 4
 table4_model1 <- glm(grocery_food ~ 
                        less_than_50k + ILF + 
-                       AGE + married + white + man + msa +
-                       mob_limit +
-                       food_stamp +
+                       AGE + age2 +married + white + man + msa +
+                       mob_limit +  food_stamp +
                        mob_limit*food_stamp,
                      data = my_dataset, family="binomial")
 summary(table4_model1)
 
-
+### table 4, model 2
+table4_model2 <- glm(prepared_food ~ 
+                       less_than_50k + ILF + 
+                       AGE + age2 +married + white + man + msa +
+                       mob_limit +  food_stamp +
+                       mob_limit*food_stamp,
+                     data = my_dataset, family="binomial")
+summary(table4_model2)
 
 
 

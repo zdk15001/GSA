@@ -21,6 +21,10 @@ library(haven)
 library(dplyr)
 #install.packages("psych")
 library(psych)
+#install.packages("tidyr")
+library(tidyr)
+#install.packages("ggplot2")
+library(ggplot2)
 
 # load data from sav
 cps <- read_sav("cps.10.26.sav")
@@ -379,6 +383,7 @@ table4_model1 <- glm(grocery_food ~
                      data = my_dataset, family="binomial")
 summary(table4_model1)
 
+
 ### table 4, model 2
 table4_model2 <- glm(prepared_food ~ 
                        less_than_50k + ILF + 
@@ -389,4 +394,372 @@ table4_model2 <- glm(prepared_food ~
 summary(table4_model2)
 
 
+###############################################################################
+#################         STEP 7: Predicted Probabilities #####################
+###############################################################################
 
+## ----- Predicted probabilities for mobility limit x food stamp -----
+
+# 1. Create a profile with means of the other covariates
+mean_profile <- my_dataset %>%
+  summarize(
+    less_than_50k = 1,
+    ILF           = 1,
+    AGE           = mean(AGE, na.rm = TRUE),
+    age2          = (mean(AGE, na.rm = TRUE))*(mean(AGE, na.rm = TRUE)),
+    married       = mean(married, na.rm = TRUE),
+    white         = mean(white, na.rm = TRUE),
+    man           = mean(man, na.rm = TRUE),
+    msa           = mean(msa, na.rm = TRUE)
+  )
+
+# 2. Build scenarios: (0,0) and (1,1) for mob_limit and food_stamp
+scenarios <- bind_rows(
+  mean_profile %>% mutate(
+    mob_limit  = 0,
+    food_stamp = 0,
+    scenario   = "No mobility limit, no SNAP"
+  ),
+  mean_profile %>% mutate(
+    mob_limit  = 0,
+    food_stamp = 1,
+    scenario   = "No mobility limit, SNAP"
+  ),
+  mean_profile %>% mutate(
+    mob_limit  = 1,
+    food_stamp = 0,
+    scenario   = "Mobility limit, no SNAP"
+  ),
+  mean_profile %>% mutate(
+    mob_limit  = 1,
+    food_stamp = 1,
+    scenario   = "Mobility limit & SNAP"
+  )
+)
+
+
+# 3. Get predicted probabilities from the interaction models
+scenarios$pred_grocery  <- predict(table4_model1, newdata = scenarios, type = "response")
+scenarios$pred_prepared <- predict(table4_model2, newdata = scenarios, type = "response")
+
+# 4. View the results
+scenarios %>%
+  select(scenario, mob_limit, food_stamp, pred_grocery, pred_prepared)
+
+####### ----- Predicted probabilities by age -----
+# Grid of ages
+age_grid <- 20:80
+
+# Average predicted probabilities by age,
+# holding all other covariates at their observed values
+age_effect <- lapply(age_grid, function(a) {
+  newdata <- my_dataset
+  newdata$AGE  <- a
+  newdata$age2 <- a^2
+  
+  data.frame(
+    AGE = a,
+    pred_grocery  = mean(predict(table3_model1, newdata = newdata, type = "response")),
+    pred_prepared = mean(predict(table3_model2, newdata = newdata, type = "response"))
+  )
+}) %>%
+  bind_rows()
+
+# Reshape to long for plotting
+plot_age <- age_effect %>%
+  pivot_longer(
+    cols      = c(pred_grocery, pred_prepared),
+    names_to  = "outcome",
+    values_to = "pred_prob"
+  ) %>%
+  mutate(
+    outcome = recode(outcome,
+                     pred_grocery  = "Grocery store",
+                     pred_prepared = "Prepared food")
+  )
+
+# Plot
+ggplot(plot_age, aes(x = AGE, y = pred_prob, color = outcome)) +
+  geom_line(size = 1) +
+  labs(
+    x = "Age (years)",
+    y = "Predicted probability",
+    color = "Outcome",
+    title = "Predicted probability of food access by age",
+    subtitle = "Other covariates held at observed values"
+  ) +
+  theme_minimal()
+
+
+
+
+
+
+
+
+
+#
+
+
+### TEST: Age effects vary by mobility limit or food stamp
+test1 <- glm(grocery_food ~ 
+                       less_than_50k + ILF + 
+                       AGE + age2 +married + white + man + msa +
+                       mob_limit*AGE +  food_stamp ,
+                     data = my_dataset, family="binomial")
+summary(test1)
+
+
+test2 <- glm(prepared_food ~ 
+               less_than_50k + ILF + 
+               AGE + age2 +married + white + man + msa +
+               mob_limit*AGE +  food_stamp ,
+             data = my_dataset, family="binomial")
+summary(test2)
+
+
+###############################################################################
+## Predicted probability by age (20–80), with/without mobility limits
+###############################################################################
+
+# 1. Grid of ages and mobility status
+age_grid <- 20:80
+
+mob_age_grid <- expand.grid(
+  AGE       = age_grid,
+  mob_limit = c(0, 1)
+) %>%
+  as_tibble()
+
+# 2. For each AGE × mob_limit combo, compute average predicted probabilities
+mob_age_effect <- mob_age_grid %>%
+  rowwise() %>%
+  mutate(
+    pred_grocery = {
+      newdata <- my_dataset
+      newdata$AGE      <- AGE
+      newdata$age2     <- AGE^2
+      newdata$mob_limit <- mob_limit
+      mean(predict(test1, newdata = newdata, type = "response"))
+    },
+    pred_prepared = {
+      newdata <- my_dataset
+      newdata$AGE      <- AGE
+      newdata$age2     <- AGE^2
+      newdata$mob_limit <- mob_limit
+      mean(predict(test2, newdata = newdata, type = "response"))
+    }
+  ) %>%
+  ungroup()
+
+# 3. Reshape to long format for plotting
+plot_mob_age <- mob_age_effect %>%
+  pivot_longer(
+    cols      = c(pred_grocery, pred_prepared),
+    names_to  = "outcome",
+    values_to = "pred_prob"
+  ) %>%
+  mutate(
+    outcome = recode(outcome,
+                     pred_grocery  = "Grocery store access",
+                     pred_prepared = "Prepared food access"),
+    mob_label = ifelse(mob_limit == 1,
+                       "Mobility limitation",
+                       "No mobility limitation")
+  )
+
+# 4. Plot: two panels (grocery vs prepared), lines for mobility vs no mobility
+ggplot(plot_mob_age,
+       aes(x = AGE, y = pred_prob, color = mob_label, linetype = mob_label)) +
+  geom_line(size = 1) +
+  facet_wrap(~ outcome) +
+  labs(
+    x        = "Age (years)",
+    y        = "Predicted probability",
+    color    = "Mobility status",
+    linetype = "Mobility status",
+    title    = "Predicted probability of food access by age and mobility limitation",
+    subtitle = "Average marginal predictions; other covariates held at observed values"
+  ) +
+  theme_minimal()
+
+### TEST: Age effects vary by food stamp
+test3 <- glm(grocery_food ~ 
+               less_than_50k + ILF + 
+               AGE + age2 +married + white + man + msa +
+               mob_limit +  food_stamp*AGE ,
+             data = my_dataset, family="binomial")
+summary(test3)
+
+
+test4 <- glm(prepared_food ~ 
+               less_than_50k + ILF + 
+               AGE + age2 +married + white + man + msa +
+               mob_limit +  food_stamp*AGE ,
+             data = my_dataset, family="binomial")
+summary(test4)
+
+###############################################################################
+## Predicted probability by age (20–80), with/without food stamps
+###############################################################################
+
+# 1. Grid of ages and food stamp status
+age_grid <- 20:80
+
+fs_age_grid <- expand.grid(
+  AGE        = age_grid,
+  food_stamp = c(0, 1)
+) %>%
+  as_tibble()
+
+# 2. For each AGE × food_stamp combo, compute average predicted probabilities
+fs_age_effect <- fs_age_grid %>%
+  rowwise() %>%
+  mutate(
+    pred_grocery = {
+      newdata <- my_dataset
+      newdata$AGE        <- AGE
+      newdata$age2       <- AGE^2
+      newdata$food_stamp <- food_stamp
+      mean(predict(test3, newdata = newdata, type = "response"))
+    },
+    pred_prepared = {
+      newdata <- my_dataset
+      newdata$AGE        <- AGE
+      newdata$age2       <- AGE^2
+      newdata$food_stamp <- food_stamp
+      mean(predict(test4, newdata = newdata, type = "response"))
+    }
+  ) %>%
+  ungroup()
+
+# 3. Reshape to long format for plotting
+plot_fs_age <- fs_age_effect %>%
+  pivot_longer(
+    cols      = c(pred_grocery, pred_prepared),
+    names_to  = "outcome",
+    values_to = "pred_prob"
+  ) %>%
+  mutate(
+    outcome = recode(outcome,
+                     pred_grocery  = "Grocery store access",
+                     pred_prepared = "Prepared food access"),
+    fs_label = ifelse(food_stamp == 1,
+                      "Received SNAP in past year",
+                      "No SNAP in past year")
+  )
+
+# 4. Plot: two panels (grocery vs prepared), lines for SNAP vs no SNAP
+ggplot(plot_fs_age,
+       aes(x = AGE, y = pred_prob, color = fs_label, linetype = fs_label)) +
+  geom_line(size = 1) +
+  facet_wrap(~ outcome) +
+  labs(
+    x        = "Age (years)",
+    y        = "Predicted probability",
+    color    = "SNAP status",
+    linetype = "SNAP status",
+    title    = "Predicted probability of food access by age and SNAP receipt",
+    subtitle = "Average marginal predictions; other covariates held at observed values"
+  ) +
+  theme_minimal()
+
+
+
+
+### TEST: Age effects vary by food stamp
+test5 <- glm(grocery_food ~ 
+               less_than_50k + ILF + 
+               AGE + age2 +married + white + man + msa +
+               mob_limit +  food_stamp +
+               mob_limit*food_stamp +
+               mob_limit*AGE +
+               food_stamp*AGE +
+               mob_limit*food_stamp*AGE,
+             data = my_dataset, family="binomial")
+summary(test5)
+
+
+test6 <- glm(prepared_food ~ 
+               less_than_50k + ILF + 
+               AGE + age2 +married + white + man + msa +
+               mob_limit +  food_stamp +
+               mob_limit*food_stamp +
+               mob_limit*AGE +
+               food_stamp*AGE +
+               mob_limit*food_stamp*AGE,
+             data = my_dataset, family="binomial")
+summary(test6)
+
+
+###############################################################################
+## Predicted probability by age (20–80), by mobility x SNAP (3-way interaction)
+###############################################################################
+
+# 1. Grid of ages and all combinations of mobility limit & SNAP
+age_grid <- 20:80
+
+threeway_grid <- expand.grid(
+  AGE        = age_grid,
+  mob_limit  = c(0, 1),
+  food_stamp = c(0, 1)
+) %>%
+  as_tibble()
+
+# 2. For each AGE × mob_limit × food_stamp combo, compute avg predicted probs
+threeway_effect <- threeway_grid %>%
+  rowwise() %>%
+  mutate(
+    pred_grocery = {
+      newdata <- my_dataset
+      newdata$AGE        <- AGE
+      newdata$age2       <- AGE^2
+      newdata$mob_limit  <- mob_limit
+      newdata$food_stamp <- food_stamp
+      mean(predict(test5, newdata = newdata, type = "response"))
+    },
+    pred_prepared = {
+      newdata <- my_dataset
+      newdata$AGE        <- AGE
+      newdata$age2       <- AGE^2
+      newdata$mob_limit  <- mob_limit
+      newdata$food_stamp <- food_stamp
+      mean(predict(test6, newdata = newdata, type = "response"))
+    }
+  ) %>%
+  ungroup()
+
+# 3. Reshape to long format + make nice labels
+plot_3way <- threeway_effect %>%
+  pivot_longer(
+    cols      = c(pred_grocery, pred_prepared),
+    names_to  = "outcome",
+    values_to = "pred_prob"
+  ) %>%
+  mutate(
+    outcome = recode(outcome,
+                     pred_grocery  = "Grocery store access",
+                     pred_prepared = "Prepared food access"),
+    group_label = case_when(
+      mob_limit == 0 & food_stamp == 0 ~ "No mobility limit, no SNAP",
+      mob_limit == 0 & food_stamp == 1 ~ "No mobility limit, SNAP",
+      mob_limit == 1 & food_stamp == 0 ~ "Mobility limit, no SNAP",
+      mob_limit == 1 & food_stamp == 1 ~ "Mobility limit & SNAP"
+    )
+  )
+
+# 4. Plot: 4 lines per panel (mobility x SNAP), 2 panels (grocery vs prepared)
+ggplot(plot_3way,
+       aes(x = AGE, y = pred_prob,
+           color = group_label, linetype = group_label)) +
+  geom_line(size = 1) +
+  facet_wrap(~ outcome) +
+  labs(
+    x        = "Age (years)",
+    y        = "Predicted probability",
+    color    = "Mobility × SNAP status",
+    linetype = "Mobility × SNAP status",
+    title    = "Predicted probability of food access by age, mobility limitation, and SNAP",
+    subtitle = "Average marginal predictions; other covariates held at observed values"
+  ) +
+  theme_minimal()

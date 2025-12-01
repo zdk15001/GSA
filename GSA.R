@@ -446,6 +446,10 @@ scenarios$pred_prepared <- predict(table4_model2, newdata = scenarios, type = "r
 scenarios %>%
   select(scenario, mob_limit, food_stamp, pred_grocery, pred_prepared)
 
+
+###### TURN SCENARIOS INTO TABLE 5 #####
+
+
 ####### ----- Predicted probabilities by age -----
 # Grid of ages
 age_grid <- 20:80
@@ -485,12 +489,12 @@ ggplot(plot_age, aes(x = AGE, y = pred_prob, color = outcome)) +
     x = "Age (years)",
     y = "Predicted probability",
     color = "Outcome",
-    title = "Predicted probability of food access by age",
+    title = "Figure 2: Predicted probability of food access by age",
     subtitle = "Other covariates held at observed values"
   ) +
   theme_minimal()
 
-
+## THIS IS FIGURE 2
 
 
 
@@ -659,7 +663,7 @@ ggplot(plot_fs_age,
     y        = "Predicted probability",
     color    = "SNAP status",
     linetype = "SNAP status",
-    title    = "Predicted probability of food access by age and SNAP receipt",
+    title    = "Figure 3: Predicted probability of food access by age and SNAP receipt",
     subtitle = "Average marginal predictions; other covariates held at observed values"
   ) +
   theme_minimal()
@@ -759,7 +763,7 @@ ggplot(plot_3way,
     y        = "Predicted probability",
     color    = "Mobility × SNAP status",
     linetype = "Mobility × SNAP status",
-    title    = "Predicted probability of food access by age, mobility limitation, and SNAP",
+    title    = "Figure 4: Predicted probability of food access by age, mobility limitation, and SNAP",
     subtitle = "Average marginal predictions; other covariates held at observed values"
   ) +
   theme_minimal()
